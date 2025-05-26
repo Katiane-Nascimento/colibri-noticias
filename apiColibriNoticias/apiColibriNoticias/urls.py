@@ -1,8 +1,8 @@
 """
-URL configuration for apiColibriNoticias project.
+URL configuration for bookstore project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/5.1/topics/http/urls/
+    https://docs.djangoproject.com/en/5.0/topics/http/urls/
 Examples:
 Function views
     1. Add an import:  from my_app import views
@@ -15,8 +15,25 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+
+#inserir diretorio estatico de imagens
+from django.conf.urls.static import static
+from django.conf import settings
+
+# django rest
+from rest_framework import routers
+
+rota = routers.DefaultRouter()
+
+from noticias.api import viewsets
+rota.register(r'noticias', viewsets.NoticiaViewSet)
+
+from categorias.api import viewsets
+rota.register(r'categorias', viewsets.CategoriaViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-]
+    path('api/', include(rota.urls)),
+    path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) # linha de inclusão de acesso as imagens via URL
