@@ -161,13 +161,15 @@ Recurso para gerenciar notícias.
         [
             {
                 "id": "93aded75-977d-4979-bfa3-f0b3ff5c0426",
+                "imagem": "URL da Imagem da Notícia",
+                "fonte": "Fonte da Notícia",
                 "titulo": "Título da Notícia 1",
                 "resumo": "Breve resumo da notícia 1...",
-                "conteudo_completo": "Conteúdo extenso da notícia 1...",
+                "link": "URL do link que direciona a Notícia completa",
                 "dataHoraPublicacao":"2024-05-24T10:00:00Z",
                 "dataHoraAdicao": "2024-05-25T10:00:00Z",
                 "colaborador": "Nome do Colaborador",
-                "categoria": null
+                "categoria": "Categoria da Notícia"
             }
         ]
         ```
@@ -180,8 +182,15 @@ Recurso para gerenciar notícias.
         ```json
         {
             "id": "93aded75-977d-4979-bfa3-f0b3ff5c0426",
+            "imagem": "URL da Imagem da Notícia",
+            "fonte": "Fonte da Notícia",
             "titulo": "Título da Notícia 1",
-            "resumo": "Breve resumo da notícia 1..."
+            "resumo": "Breve resumo da notícia 1...",
+            "link": "URL do link que direciona a Notícia completa",
+            "dataHoraPublicacao":"2024-05-24T10:00:00Z",
+            "dataHoraAdicao": "2024-05-25T10:00:00Z",
+            "colaborador": "Nome do Colaborador",
+            "categoria": null
         }
         ```
     * **Resposta de Erro:** `404 Not Found` se a notícia não existir.
@@ -191,15 +200,18 @@ Recurso para gerenciar notícias.
     * **Corpo da Requisição (JSON):**
         ```json
         {
+            "imagem": "https://site.com.br/imagem/kewkew23.jpg",
+            "fonte": "Jornal A",
             "titulo": "Nova Descoberta Científica",
             "resumo": "Cientistas anunciam avanço importante...",
-            "conteudo_completo": "Detalhes completos da descoberta...",
+            "link": "https://jornal-a.com.br/nova-descoberta-cientifica/",
+            "dataHoraPublicacao": "2024-05-25T14:30:00Z",
             "dataHoraAdicao": "2024-05-26T14:30:00Z",
             "colaborador": "Redação Científica",
             "categoria": "ciência"
         }
         ```
-    * **Campos Obrigatórios:** `titulo`, `conteudo_completo`, `categoria`. (Ajuste conforme sua modelagem)
+    * **Campos Obrigatórios:** Todos (exceto o id e a data e hora de adição) .
     * **Resposta de Sucesso:** `201 Created` (Retorna a notícia criada)
     * **Resposta de Erro:** `400 Bad Request`
 
@@ -208,20 +220,6 @@ Recurso para gerenciar notícias.
     * **Parâmetros de URL:**
         * `id` (integer, obrigatório): O ID da notícia a ser atualizada.
     * **Corpo da Requisição (JSON):** (Mesma estrutura do POST, com os campos a serem atualizados)
-    * **Resposta de Sucesso:** `200 OK` (Retorna a notícia atualizada)
-    * **Resposta de Erro:** `400 Bad Request`, `404 Not Found`.
-
-* **`PATCH /api/noticias/{id}/`** *(Considere adicionar este endpoint)*
-    * **Descrição:** Atualiza parcialmente uma notícia existente. Envia apenas os campos que deseja alterar.
-    * **Parâmetros de URL:**
-        * `id` (integer, obrigatório): O ID da notícia a ser atualizada.
-    * **Corpo da Requisição (JSON):**
-        ```json
-        {
-            "titulo": "Título Atualizado da Notícia",
-            "resumo": "Resumo revisado."
-        }
-        ```
     * **Resposta de Sucesso:** `200 OK` (Retorna a notícia atualizada)
     * **Resposta de Erro:** `400 Bad Request`, `404 Not Found`.
 
@@ -258,7 +256,7 @@ Recurso para gerenciar notícias.
 
 ## Exemplos de Requisição/Resposta
 
-*(Esta seção pode ser expandida com exemplos mais detalhados usando `curl` ou uma ferramenta como Postman/Insomnia para cada endpoint, se desejar.)*
+*(Esta seção pode ser expandida com exemplos mais detalhados usando `curl` ou uma ferramenta como Postman/Insomnia/Thunder Client para cada endpoint, se desejar.)*
 
 **Exemplo de criação de categoria usando `curl`:**
 
@@ -267,5 +265,5 @@ curl -X POST [http://127.0.0.1:8000/api/categorias/](http://127.0.0.1:8000/api/c
 -H "Authorization: Token SEU_TOKEN_AQUI" \
 -H "Content-Type: application/json" \
 -d '{
-    "nome": "Saúde",
-}'
+        "nome": "Saúde",
+    }'
