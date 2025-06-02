@@ -9,6 +9,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:colibri_noticias/paginas/noticias.dart';
 import 'package:colibri_noticias/paginas/sobre.dart';
 import 'package:colibri_noticias/componentes/barra_navegacao.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
 List<Colaborador> listaColaboradores = [
   Colaborador(
@@ -28,6 +30,7 @@ List<Colaborador> listaColaboradores = [
 ];
 
 void main() {
+  tz.initializeTimeZones();
   runApp(const ColibriNoticias());
 }
 

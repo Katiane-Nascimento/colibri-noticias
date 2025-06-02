@@ -1,6 +1,7 @@
 import 'package:brasil_fields/brasil_fields.dart';
 import 'package:colibri_noticias/componentes/app_bar.dart';
 import 'package:colibri_noticias/componentes/campo_formulario.dart';
+import 'package:colibri_noticias/componentes/cartao_noticia.dart';
 import 'package:colibri_noticias/modelos/categoria.dart';
 import 'package:colibri_noticias/modelos/noticia.dart';
 import 'package:colibri_noticias/servicos/gerenciador_categorias.dart';
@@ -10,14 +11,16 @@ import 'package:colibri_noticias/utilitarios/validadores.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class CadastroNoticias extends StatefulWidget {
-  const CadastroNoticias({super.key});
+class EditarNoticias extends StatefulWidget {
+  final CartaoNoticia noticia;
+
+  const EditarNoticias({super.key, required this.noticia});
 
   @override
-  State<CadastroNoticias> createState() => _CadastroNoticiasState();
+  State<EditarNoticias> createState() => _EditarNoticiasState();
 }
 
-class _CadastroNoticiasState extends State<CadastroNoticias> {
+class _EditarNoticiasState extends State<EditarNoticias> {
   final _formKey = GlobalKey<FormState>();
 
   late TextEditingController imagemController;
@@ -41,13 +44,21 @@ class _CadastroNoticiasState extends State<CadastroNoticias> {
   @override
   void initState() {
     super.initState();
-    imagemController = TextEditingController();
-    fonteController = TextEditingController();
-    linkController = TextEditingController();
-    tituloController = TextEditingController();
-    resumoController = TextEditingController();
-    dataHoraPublicacaoController = TextEditingController();
-    categoriaController = TextEditingController();
+
+    imagemController = TextEditingController(
+      text: widget.noticia.imagem.toString(),
+    );
+    fonteController = TextEditingController(text: widget.noticia.fonte);
+    linkController = TextEditingController(
+      text: widget.noticia.link.toString(),
+    );
+    tituloController = TextEditingController(text: widget.noticia.titulo);
+    resumoController = TextEditingController(text: widget.noticia.resumo);
+    dataHoraPublicacaoController = TextEditingController(
+      text:
+          '${UtilData.obterDataDDMMAAAA(widget.noticia.dataHoraPublicacao)} ${UtilData.obterHoraHHMM(widget.noticia.dataHoraPublicacao)}',
+    );
+    categoriaController = TextEditingController(text: widget.noticia.categoria);
 
     imagemFocus = FocusNode();
     fonteFocus = FocusNode();
@@ -59,21 +70,40 @@ class _CadastroNoticiasState extends State<CadastroNoticias> {
   }
 
   @override
+  void dispose() {
+    imagemController.dispose();
+    fonteController.dispose();
+    linkController.dispose();
+    tituloController.dispose();
+    resumoController.dispose();
+    dataHoraPublicacaoController.dispose();
+    categoriaController.dispose();
+
+    imagemFocus.dispose();
+    fonteFocus.dispose();
+    linkFocus.dispose();
+    tituloFocus.dispose();
+    resumoFocus.dispose();
+    dataHoraPublicacaoFocus.dispose();
+    categoriaFocus.dispose();
+
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
     double responsiveWidth = width * 0.95;
 
     return Scaffold(
-      appBar: CustomAppBar(title: "Cadastro de Notícias"),
+      appBar: CustomAppBar(title: "Editar Notícia"),
       body: Center(
         child: SingleChildScrollView(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 24),
               const Text(
-                'Cadastrar Notícia',
+                'Editar Notícia',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
@@ -86,14 +116,12 @@ class _CadastroNoticiasState extends State<CadastroNoticias> {
                   width: responsiveWidth,
                   padding: const EdgeInsets.all(24),
                   child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       CampoFormulario(
                         controller: imagemController,
                         focusNode: imagemFocus,
                         label: 'Imagem',
-                        placeholder: 'Coloque a URL da imagem',
+                        placeholder: 'URL da imagem',
                         prefixIcon: const Icon(Icons.image),
                         validator: validarUrl,
                         inputFormatters: [],
@@ -102,7 +130,7 @@ class _CadastroNoticiasState extends State<CadastroNoticias> {
                         controller: fonteController,
                         focusNode: fonteFocus,
                         label: 'Fonte',
-                        placeholder: 'Coloque o nome da fonte da notícia',
+                        placeholder: 'Fonte da notícia',
                         prefixIcon: const Icon(Icons.newspaper),
                         validator: validarCampoTexto,
                         inputFormatters: [],
@@ -111,7 +139,7 @@ class _CadastroNoticiasState extends State<CadastroNoticias> {
                         controller: linkController,
                         focusNode: linkFocus,
                         label: 'Link',
-                        placeholder: 'Coloque a URL da fonte da notícia',
+                        placeholder: 'Link da fonte',
                         prefixIcon: const Icon(Icons.link),
                         validator: validarUrl,
                         inputFormatters: [],
@@ -120,7 +148,7 @@ class _CadastroNoticiasState extends State<CadastroNoticias> {
                         controller: tituloController,
                         focusNode: tituloFocus,
                         label: 'Título',
-                        placeholder: 'Coloque o título da notícia',
+                        placeholder: 'Título da notícia',
                         prefixIcon: const Icon(Icons.title),
                         validator: validarCampoTexto,
                         inputFormatters: [],
@@ -129,7 +157,7 @@ class _CadastroNoticiasState extends State<CadastroNoticias> {
                         controller: resumoController,
                         focusNode: resumoFocus,
                         label: 'Resumo',
-                        placeholder: 'Coloque o resumo da notícia',
+                        placeholder: 'Resumo da notícia',
                         prefixIcon: const Icon(Icons.text_snippet),
                         validator: validarCampoTexto,
                         inputFormatters: [],
@@ -157,7 +185,6 @@ class _CadastroNoticiasState extends State<CadastroNoticias> {
                             return Text('Erro: ${snapshot.error}');
                           } else {
                             final categorias = snapshot.data ?? [];
-
                             return CampoFormulario(
                               controller: categoriaController,
                               focusNode: categoriaFocus,
@@ -174,15 +201,14 @@ class _CadastroNoticiasState extends State<CadastroNoticias> {
                         },
                       ),
                       const SizedBox(height: 24),
-
-                      // Botão com loading
                       _carregando
-                          ? const CircularProgressIndicator()
+                          ? const CircularProgressIndicator(color: Colors.blue)
                           : ElevatedButton(
-                            onPressed: _cadastrarNoticia,
+                            onPressed: () {
+                              _editarNoticia();
+                            },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  Theme.of(context).primaryColorDark,
+                              backgroundColor: Colors.blue,
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 50,
                                 vertical: 15,
@@ -193,7 +219,7 @@ class _CadastroNoticiasState extends State<CadastroNoticias> {
                               elevation: 0,
                             ),
                             child: const Text(
-                              "Cadastrar",
+                              "Editar",
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 16,
@@ -211,39 +237,30 @@ class _CadastroNoticiasState extends State<CadastroNoticias> {
     );
   }
 
-  void _cadastrarNoticia() async {
+  Future<void> _editarNoticia() async {
     if (_formKey.currentState == null || !_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            "Preencha todos os campos corretamente!",
-            style: TextStyle(color: Colors.white),
-          ),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      _mostrarSnackBar("Preencha todos os campos corretamente!", Colors.red);
       return;
     }
-
     setState(() {
       _carregando = true;
     });
 
-    try {
-      Noticia novaNoticia = Noticia(
-        imagem: Uri.parse(imagemController.text),
-        fonte: fonteController.text,
-        link: Uri.parse(linkController.text),
-        titulo: tituloController.text,
-        resumo: resumoController.text,
-        dataHoraPublicacao: UtilData.obterDateTimeHora(
-          dataHoraPublicacaoController.text,
-        ),
-        categoria: categoriaController.text,
-        colaborador: GerenciadorLogin.colaboradorLogado!.nomeCompleto(),
-      );
+    final noticiaEditada = Noticia(
+      id: widget.noticia.id,
+      imagem: Uri.parse(imagemController.text),
+      fonte: fonteController.text,
+      link: Uri.parse(linkController.text),
+      titulo: tituloController.text,
+      resumo: resumoController.text,
+      dataHoraPublicacao: UtilData.obterDateTimeHora(
+        dataHoraPublicacaoController.text,
+      ),
+      categoria: categoriaController.text,
+      colaborador: GerenciadorLogin.colaboradorLogado!.nomeCompleto(),
+    );
 
+    try {
       if (await GerenciadorCategoria.temCategoria(categoriaController.text) ==
           false) {
         await GerenciadorCategoria.adicionarCategoria(
@@ -251,30 +268,16 @@ class _CadastroNoticiasState extends State<CadastroNoticias> {
         );
       }
 
-      await GerenciadorNoticia.adicionarNoticia(novaNoticia);
+      await GerenciadorNoticia.editarNoticia(noticiaEditada);
 
       if (context.mounted) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Notícia adicionada com sucesso!"),
-            backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        Navigator.pop(context, true); // Volta para tela anterior
+        _mostrarSnackBar("Notícia atualizada com sucesso!", Colors.green);
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              e.toString(),
-              style: const TextStyle(color: Colors.white),
-            ),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        Navigator.pop(context);
+        _mostrarSnackBar("Erro ao editar notícia: $e", Colors.red);
       }
     } finally {
       setState(() {
@@ -283,24 +286,13 @@ class _CadastroNoticiasState extends State<CadastroNoticias> {
     }
   }
 
-  @override
-  void dispose() {
-    imagemController.dispose();
-    fonteController.dispose();
-    linkController.dispose();
-    tituloController.dispose();
-    resumoController.dispose();
-    dataHoraPublicacaoController.dispose();
-    categoriaController.dispose();
-
-    imagemFocus.dispose();
-    fonteFocus.dispose();
-    linkFocus.dispose();
-    tituloFocus.dispose();
-    resumoFocus.dispose();
-    dataHoraPublicacaoFocus.dispose();
-    categoriaFocus.dispose();
-
-    super.dispose();
+  void _mostrarSnackBar(String mensagem, Color cor) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(mensagem),
+        backgroundColor: cor,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 }

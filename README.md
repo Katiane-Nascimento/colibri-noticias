@@ -37,6 +37,7 @@ A API Colibri Notícias é o backend responsável por fornecer e gerenciar o con
 * Django REST Framework
 * SQLite
 
+
 ## Como Começar (Setup Local)
 
 Siga estas instruções para configurar e executar a API em seu ambiente local.
