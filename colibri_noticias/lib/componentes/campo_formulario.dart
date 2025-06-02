@@ -12,6 +12,8 @@ class CampoFormulario extends StatefulWidget {
   final List<TextInputFormatter>? inputFormatters;
   final bool isDateField;
   final bool isPasswordField;
+  final bool isSelectField;
+  final List<String>? selectOptions;
 
   const CampoFormulario({
     super.key,
@@ -23,7 +25,9 @@ class CampoFormulario extends StatefulWidget {
     required this.validator,
     required this.inputFormatters,
     this.isDateField = false,
-    this.isPasswordField = false, // indica se o campo é de senha
+    this.isPasswordField = false,
+    this.isSelectField = false,
+    this.selectOptions,
   });
 
   @override
@@ -31,10 +35,17 @@ class CampoFormulario extends StatefulWidget {
 }
 
 class _CampoFormularioState extends State<CampoFormulario> {
-  bool _isPasswordFieldVisible = false; // Estado local para controlar a visibilidade da senha.
+  bool _isPasswordFieldVisible = false;
+  List<String> _options = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _options = widget.selectOptions ?? [];
+  }
 
   Future<void> _selectDate(BuildContext context) async {
-    widget.focusNode.unfocus(); 
+    widget.focusNode.unfocus();
     if (!context.mounted) return;
     final DateTime? selectedDate = await showDatePicker(
       context: context,
@@ -49,9 +60,6 @@ class _CampoFormularioState extends State<CampoFormulario> {
               primary: Theme.of(context).primaryColorDark,
               onPrimary: Colors.white,
               onSurface: Theme.of(context).primaryColorDark,
-            ),
-            dialogTheme: DialogTheme(
-              backgroundColor: Theme.of(context).primaryColorDark,
             ),
           ),
           child: child!,
@@ -70,9 +78,6 @@ class _CampoFormularioState extends State<CampoFormulario> {
                 primary: Theme.of(context).primaryColorDark,
                 onPrimary: Colors.white,
                 onSurface: Theme.of(context).primaryColorDark,
-              ),
-              dialogTheme: DialogTheme(
-                backgroundColor: Theme.of(context).primaryColorDark,
               ),
             ),
             child: child!,
@@ -93,6 +98,84 @@ class _CampoFormularioState extends State<CampoFormulario> {
     }
   }
 
+  Future<void> _showSelectDialog() async {
+    widget.focusNode.unfocus();
+    String? selected = widget.controller.text.isNotEmpty ? widget.controller.text : null;
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(widget.label),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ..._options.map((option) => ListTile(
+                      title: Text(option),
+                      trailing: selected == option
+                          ? Icon(Icons.check, color: Colors.green)
+                          : null,
+                      onTap: () {
+                        setState(() {
+                          widget.controller.text = option;
+                        });
+                        Navigator.pop(context);
+                      },
+                    )),
+                const Divider(),
+                ListTile(
+                  leading: Icon(Icons.add, color: Colors.blue),
+                  title: Text('Adicionar novo'),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    await _showAddNewDialog();
+                  },
+                )
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _showAddNewDialog() async {
+    String newOption = '';
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Adicionar nova'),
+        content: TextField(
+          autofocus: true,
+          decoration: const InputDecoration(hintText: 'Digite aqui'),
+          onChanged: (value) {
+            newOption = value;
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (newOption.trim().isNotEmpty) {
+                setState(() {
+                  _options.add(newOption.trim());
+                  widget.controller.text = newOption.trim();
+                });
+              }
+              Navigator.pop(context);
+            },
+            child: const Text('Adicionar'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -102,7 +185,12 @@ class _CampoFormularioState extends State<CampoFormulario> {
         controller: widget.controller,
         focusNode: widget.focusNode,
         validator: widget.validator,
-        onTap: widget.isDateField ? () => _selectDate(context) : null,
+        readOnly: widget.isDateField || widget.isSelectField,
+        onTap: widget.isDateField
+            ? () => _selectDate(context)
+            : widget.isSelectField
+                ? () => _showSelectDialog()
+                : null,
         autovalidateMode: AutovalidateMode.onUserInteraction,
         decoration: InputDecoration(
           labelText: widget.label,
@@ -126,26 +214,21 @@ class _CampoFormularioState extends State<CampoFormulario> {
             borderRadius: BorderRadius.circular(10),
           ),
           prefixIcon: widget.prefixIcon,
-          suffixIcon:
-              widget.isPasswordField
-                  ? IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _isPasswordFieldVisible = !_isPasswordFieldVisible;
-                      });
-                    },
-                    icon: Icon(
-                      _isPasswordFieldVisible
-                          ? Icons.visibility
-                          : Icons.visibility_off,
-                      color: Colors.grey,
-                    ),
-                  )
-                  : null,
+          suffixIcon: widget.isPasswordField
+              ? IconButton(
+                  onPressed: () {
+                    setState(() {
+                      _isPasswordFieldVisible = !_isPasswordFieldVisible;
+                    });
+                  },
+                  icon: Icon(
+                    _isPasswordFieldVisible ? Icons.visibility : Icons.visibility_off,
+                    color: Colors.grey,
+                  ),
+                )
+              : null,
         ),
-        obscureText:
-            widget.isPasswordField &&
-            !_isPasswordFieldVisible, // Exibe ou oculta a senha.
+        obscureText: widget.isPasswordField && !_isPasswordFieldVisible,
         textAlign: TextAlign.left,
         style: const TextStyle(fontSize: 16),
         inputFormatters: widget.inputFormatters,

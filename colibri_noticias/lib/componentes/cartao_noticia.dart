@@ -1,10 +1,14 @@
 import 'package:brasil_fields/brasil_fields.dart';
+import 'package:colibri_noticias/paginas/editar_noticia.dart';
+import 'package:colibri_noticias/servicos/gerenciador_noticia.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class CartaoNoticia extends StatelessWidget {
-  final String imagem;
+class CartaoNoticia extends StatefulWidget {
+  final String id;
+  final Uri imagem;
   final String titulo;
   final String resumo;
   final String fonte;
@@ -12,9 +16,12 @@ class CartaoNoticia extends StatelessWidget {
   final DateTime dataHoraPublicacao;
   final String nomeColaborador;
   final DateTime dataHoraAdicao;
+  final String categoria;
+  final VoidCallback? noticiasAtualizadas;
 
   const CartaoNoticia({
     super.key,
+    required this.id,
     required this.imagem,
     required this.titulo,
     required this.resumo,
@@ -23,14 +30,29 @@ class CartaoNoticia extends StatelessWidget {
     required this.dataHoraPublicacao,
     required this.nomeColaborador,
     required this.dataHoraAdicao,
+    required this.categoria,
+    this.noticiasAtualizadas,
   });
 
+  @override
+  State<CartaoNoticia> createState() => _CartaoNoticiaState();
+}
+
+class _CartaoNoticiaState extends State<CartaoNoticia> {
   String tempoAdicao() {
     final now = DateTime.now();
-    final difference = now.difference(dataHoraAdicao);
-    if (UtilData.obterDataDDMMAAAA(now) == UtilData.obterDataDDMMAAAA(dataHoraAdicao)) {
+    if (kDebugMode) {
+      print(now);
+      print(widget.dataHoraAdicao);
+    }
+    final difference = now.difference(widget.dataHoraAdicao);
+    if (kDebugMode) {
+      print(difference);
+    }
+    if (UtilData.obterDataDDMMAAAA(now) ==
+        UtilData.obterDataDDMMAAAA(widget.dataHoraAdicao)) {
       return 'Hoje';
-    } else if (difference.inDays == 1) {
+    } else if (difference.inDays <= 1) {
       return 'Ontem';
     } else if (difference.inDays < 7) {
       return 'Há ${difference.inDays} dias';
@@ -43,11 +65,121 @@ class CartaoNoticia extends StatelessWidget {
     }
   }
 
-  Future<void> _abrirURL(Uri url, BuildContext context) async {
+  Future<void> _abrirURL(Uri url) async {
     if (kIsWeb) {
       await launchUrl(url, webOnlyWindowName: '_blank');
     } else {
       await launchUrl(url);
+    }
+  }
+
+  Future<void> _confirmarAcao(BuildContext context) async {
+    showCupertinoDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return CupertinoAlertDialog(
+          title: const Text('Opções'),
+          content: const Text('O que você deseja fazer?'),
+          actions: [
+            CupertinoDialogAction(
+              onPressed: () async {
+                Navigator.pop(context);
+                final resultado = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EditarNoticias(noticia: widget),
+                  ),
+                );
+
+                if (resultado == true) {
+                  widget.noticiasAtualizadas?.call();
+                }
+              },
+              child: const Text('Editar', style: TextStyle(color: Colors.blue)),
+            ),
+            CupertinoDialogAction(
+              isDestructiveAction: true,
+              onPressed: () {
+                Navigator.pop(context);
+                _confirmarExclusao(context);
+              },
+              child: const Text('Deletar', style: TextStyle(color: Colors.red)),
+            ),
+            CupertinoDialogAction(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text(
+                'Cancelar',
+                style: TextStyle(color: Colors.grey),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _confirmarExclusao(BuildContext context) async {
+    showCupertinoDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return CupertinoAlertDialog(
+          title: const Text('Confirmar exclusão'),
+          content: const Text(
+            'Deseja mesmo deletar? Esta ação é irreversível.',
+          ),
+          actions: [
+            CupertinoDialogAction(
+              isDestructiveAction: true,
+              onPressed: () async {
+                Navigator.pop(context);
+                await _deletarNoticia(context);
+                widget.noticiasAtualizadas?.call();
+              },
+              child: const Text('Sim', style: TextStyle(color: Colors.red)),
+            ),
+            CupertinoDialogAction(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text(
+                'Cancelar',
+                style: TextStyle(color: Colors.grey),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _deletarNoticia(BuildContext context) async {
+    try {
+      await GerenciadorNoticia.deletarNoticia(widget.id);
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Notícia deletada com sucesso!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Erro ao deletar: $e',
+              style: const TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     }
   }
 
@@ -61,8 +193,8 @@ class CartaoNoticia extends StatelessWidget {
           Align(
             alignment: Alignment.topRight,
             child: Text(
-              '${UtilData.obterDataDDMMAAAA(dataHoraPublicacao)} '
-              '${UtilData.obterHoraHHMM(dataHoraPublicacao) != "00:00" ? UtilData.obterHoraHHMM(dataHoraPublicacao) : ""}',
+              '${UtilData.obterDataDDMMAAAA(widget.dataHoraPublicacao)} '
+              '${UtilData.obterHoraHHMM(widget.dataHoraPublicacao) != "00:00" ? UtilData.obterHoraHHMM(widget.dataHoraPublicacao) : ""}',
               style: const TextStyle(
                 fontSize: 12,
                 color: Colors.grey,
@@ -72,8 +204,11 @@ class CartaoNoticia extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           GestureDetector(
+            onLongPress: () {
+              _confirmarAcao(context);
+            },
             onTap: () {
-              _abrirURL(link, context);
+              _abrirURL(widget.link);
             },
             child: Stack(
               children: [
@@ -84,7 +219,7 @@ class CartaoNoticia extends StatelessWidget {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(16),
                       image: DecorationImage(
-                        image: NetworkImage(imagem),
+                        image: NetworkImage(widget.imagem.toString()),
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -98,9 +233,12 @@ class CartaoNoticia extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                     color: Colors.black.withValues(alpha: 0.5),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       child: Text(
-                        fonte,
+                        widget.fonte,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 12,
@@ -135,7 +273,7 @@ class CartaoNoticia extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          titulo,
+                          widget.titulo,
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 14,
@@ -144,7 +282,7 @@ class CartaoNoticia extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          resumo,
+                          widget.resumo,
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 12,
@@ -169,7 +307,7 @@ class CartaoNoticia extends StatelessWidget {
                   children: [
                     const TextSpan(text: 'Adicionada por '),
                     TextSpan(
-                      text: nomeColaborador,
+                      text: widget.nomeColaborador,
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ],
