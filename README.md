@@ -88,8 +88,6 @@ Siga estas instruções para configurar e executar a API em seu ambiente local.
 
 ## Autenticação
 
-*(Esta seção é crucial e precisa ser preenchida com base na sua implementação)*
-
 **Exemplo:**
 A API utiliza autenticação baseada em Token (TokenAuthentication). Para acessar os endpoints protegidos, você precisa incluir um Token de autenticação no header `Authorization` de suas requisições:
 
