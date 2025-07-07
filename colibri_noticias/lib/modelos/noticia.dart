@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
 class Noticia {
