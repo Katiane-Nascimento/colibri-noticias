@@ -14,9 +14,6 @@ Bem-vindo à API Colibri Notícias! Esta API fornece endpoints para gerenciar e 
 * [Endpoints da API](#endpoints-da-api)
     * [Categorias](#categorias)
     * [Notícias](#notícias)
-* [Exemplos de Requisição/Resposta](#exemplos-de-requisiçãoresposta)
-* [Tratamento de Erros](#tratamento-de-erros)
-* [Contribuição](#contribuição-opcional)
 
 ## Sobre
 
@@ -252,17 +249,3 @@ Recurso para gerenciar notícias.
 * **Combinando Parâmetros:**
     * É possível combinar múltiplos parâmetros de query:
     * **Exemplo:** `/api/noticias/?search=futebol&categoria=Esportes&ordering=-dataHoraAdicao`
-
-## Exemplos de Requisição/Resposta
-
-*(Esta seção pode ser expandida com exemplos mais detalhados usando `curl` ou uma ferramenta como Postman/Insomnia/Thunder Client para cada endpoint, se desejar.)*
-
-**Exemplo de criação de categoria usando `curl`:**
-
-```bash
-curl -X POST [http://127.0.0.1:8000/api/categorias/](http://127.0.0.1:8000/api/categorias/) \
--H "Authorization: Token SEU_TOKEN_AQUI" \
--H "Content-Type: application/json" \
--d '{
-        "nome": "Saúde",
-    }'
